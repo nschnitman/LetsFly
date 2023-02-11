@@ -56,11 +56,6 @@ if returnFrom < dateFrom:
     print('Please enter a valid return date')
     exit()
 
-#Safety check for airport codes
-if len(flyFrom) != 3 or len(flyTo) != 3 or len(flyFrom) == 0 or len(flyTo) == 0 :
-    print('Please enter a valid airport code')
-    exit()
-
 
 
 # Set the API endpoint and parameters for the "Routes" API
