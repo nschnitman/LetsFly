@@ -1,10 +1,10 @@
-import os
 import requests
 from prettytable import PrettyTable
 from datetime import datetime, timedelta
+from decouple import config
 
 # Set the API key
-api_key = os.environ.get('API_KEY')
+api_key = config('API_KEY')
 
 # Set the API endpoint and parameters for the "Locations" API
 url = "https://tequila-api.kiwi.com/locations/query"
@@ -14,7 +14,7 @@ params = {
     "active_only": True
 }
 headers = {
-    "apikey": api_key  # Replace with your own Tequila API key
+    "apikey": api_key  # Replace with your own Tequila API key on the .env file
 }
 
 # Send the HTTP request
@@ -39,6 +39,30 @@ if dateFrom == '':
 if returnFrom == '':
     returnDate = today + timedelta(days=4) #Return 4 days later
     returnFrom = returnDate.strftime('%d/%m/%Y')
+
+#Safety check for valid dates
+try:
+    datetime.strptime(dateFrom, '%d/%m/%Y')
+    datetime.strptime(returnFrom, '%d/%m/%Y')
+except ValueError:
+    print('Please enter a valid date')
+    exit()
+
+#Safety check for dates
+if dateFrom < today.strftime('%d/%m/%Y'):
+    print('Please enter a valid departure date')
+    exit()
+if returnFrom < dateFrom:
+    print('Please enter a valid return date')
+    exit()
+
+#Safety check for airport codes
+if len(flyFrom) != 3 or len(flyTo) != 3:
+    print('Please enter a valid airport code')
+    exit()
+
+
+
 # Set the API endpoint and parameters for the "Routes" API
 url = "https://tequila-api.kiwi.com/v2/search"
 params = {

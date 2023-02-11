@@ -8,9 +8,9 @@ To use this script, you will need a Tequila API key. You can obtain an API key b
 
 Once you have an API key, add it to the .env file on the folder.
 
-You will also need to have the requests and prettytable Python packages installed. You can install these packages using pip:
+You will also need to have the requests, prettytable and python-decouple Python packages installed. You can install these packages using pip:
 
-`pip install requests prettytable`
+`pip install requests prettytable python-decouple`
 
 ## Usage
 
