@@ -85,7 +85,7 @@ unique_airports = set()
 
 # Create a PrettyTable instance
 table = PrettyTable()
-table.field_names = ["City", "Departure Date", "Arrival Date", "Price"]
+table.field_names = ["City", "Departure Date", "Return Date", "Price"]
 table.align["City"] = "l"
 # Add rows to the table for each unique airport
 for flight in flights:
