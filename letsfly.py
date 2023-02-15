@@ -1,7 +1,34 @@
 import requests
+import argparse
 from prettytable import PrettyTable
 from datetime import datetime, timedelta
 from decouple import config
+
+
+#cmd arguments
+parser = argparse.ArgumentParser()
+#add option for -d to search for destination
+parser.add_argument("-d", "--flyTo", help="Enter destination airport code", default='europe', nargs='?')
+#add option for -f to search for departure
+parser.add_argument("-f", "--flyFrom", help="Enter departure airport code", default='TLV', nargs='?')
+#add option for -t to search for departure date
+parser.add_argument("-t", "--dateFrom", help="Enter departure date as DD/MM/YYYY", default='', nargs='?', type=str,  metavar='today/tomorrow')
+#add option for -r to search for return date
+parser.add_argument("-r", "--returnFrom", help="Enter return date as DD/MM/YYYY", default='', nargs='?', type=str)
+#add option for -v to show version
+parser.add_argument("-v", "--version", help="Show version", default='', nargs='?', type=str)
+#add option for -s to show search
+parser.add_argument("-s", "--search", help="Show search", default='', nargs='?', type=str)
+#add option for -p to show price
+parser.add_argument("-p", "--price", help="Show price", default='', nargs='?', type=str)
+#add option for -c to show cheapest
+parser.add_argument("-c", "--cheapest", help="Show cheapest", default='', nargs='?', type=str)
+#add option for -e to show expensive
+parser.add_argument("-e", "--expensive", help="Show expensive", default='', nargs='?', type=str)
+#add option for -a to show all
+parser.add_argument("-a", "--all", help="Show all", default='', nargs='?', type=str)
+
+args = parser.parse_args()
 
 # Set the API key
 api_key = config('API_KEY')
@@ -23,38 +50,108 @@ response = requests.get(url, params=params, headers=headers)
 # Extract the destination airport ID
 data = response.json()
 destination_id = data["locations"][0]["id"]
+flyFrom = args.flyFrom
+flyTo = args.flyTo
+dateFrom = args.dateFrom
+returnFrom = args.returnFrom
+
 print("Welcome to the search engine. Find the best deals for your next trip! We recomend to search for flights to Europe.")
-dateFrom = input('Enter departure date as DD/MM/YYYY:  ')
-returnFrom = input('Enter return date as DD/MM/YYYY: ')
-flyFrom = input('Enter departure airport code: ')
-flyTo = input('Enter destination airport code: ')
+
 today = datetime.now()
-if flyFrom == '':
+if flyFrom == '' or flyFrom == None:
     flyFrom = 'TLV' #Change to your departure airport code
-if flyTo == '':
+if flyTo == '' or flyTo == None:
     flyTo = 'europe' #Change to your destination airport code
-if dateFrom == '':
+
+if (dateFrom == '' or dateFrom == None) and (returnFrom == '' or returnFrom == None): 
+    if today.weekday() == 0:
+        departure = today + timedelta(days=3)
+        returnDate = today + timedelta(days=7)
+    elif today.weekday() == 1:
+        departure = today + timedelta(days=2)
+        returnDate = today + timedelta(days=6)
+    elif today.weekday() == 2:
+        departure = today + timedelta(days=8)
+        returnDate = today + timedelta(days=12)
+    elif today.weekday() == 3:
+        departure = today + timedelta(days=7)
+        returnDate = today + timedelta(days=11)
+    elif today.weekday() == 4:
+        departure = today + timedelta(days=6)
+        returnDate = today + timedelta(days=10)
+    elif today.weekday() == 5:
+        departure = today + timedelta(days=5)
+        returnDate = today + timedelta(days=9)
+    elif today.weekday() == 6:
+        departure = today + timedelta(days=4)
+        returnDate = today + timedelta(days=8)
+    dateFrom = departure.strftime('%d/%m/%Y')
+    returnFrom = returnDate.strftime('%d/%m/%Y')
+    print('You did not enter a date, so we chose the best dates for you')
+
+#Change to your departure date
+if dateFrom == 'today':
+    departure = today
+    dateFrom = today.strftime('%d/%m/%Y')
+
+#Change to your departure date
+if dateFrom == 'tomorrow': 
     departure = today + timedelta(days=1) #Return the next day
     dateFrom = departure.strftime('%d/%m/%Y')
-if returnFrom == '':
+
+#if dateFrom is a valid date
+if dateFrom != 'today' and dateFrom != 'tomorrow' and dateFrom != '' and dateFrom != None:
+    departure = datetime.strptime(dateFrom, '%d/%m/%Y')
+    returnDate = departure + timedelta(days=4) #Return 4 days later
+    returnFrom = returnDate.strftime('%d/%m/%Y')
+
+#Change to your return date
+if (returnFrom == '' or returnFrom == 'today' or returnFrom == None):
     returnDate = today + timedelta(days=4) #Return 4 days later
     returnFrom = returnDate.strftime('%d/%m/%Y')
 
-#Safety check for valid dates
-try:
-    datetime.strptime(dateFrom, '%d/%m/%Y')
-    datetime.strptime(returnFrom, '%d/%m/%Y')
-except ValueError:
-    print('Please enter a valid date')
-    exit()
+#Change to your return date
+if returnFrom == 'tomorrow':
+    returnDate = today + timedelta(days=5) #Return 5 days later
+    returnFrom = returnDate.strftime('%d/%m/%Y')
+
+#if returnFrom is a valid date
+if returnFrom != 'today' and returnFrom != 'tomorrow' and returnFrom != '' and returnFrom != None:
+    returnDate = datetime.strptime(returnFrom, '%d/%m/%Y')
+    departure = returnDate - timedelta(days=4) #Leave 4 days before return
+    dateFrom = departure.strftime('%d/%m/%Y')
+
+#if elseif else
+
+
+
+
 
 #Safety check for dates
-if dateFrom < today.strftime('%d/%m/%Y'):
+if departure < today and departure != today and returnDate < today and returnDate != today:
     print('Please enter a valid departure date')
+    print('Today is ' + today.strftime('%d/%m/%Y'))
+    print('You entered ' + departure.strftime('%d/%m/%Y') + ' as departure date')
     exit()
-if returnFrom < dateFrom:
+if returnDate < departure:
     print('Please enter a valid return date')
+    print('Today is ' + today.strftime('%d/%m/%Y'))
+    print('You entered ' + returnFrom + ' as return date')
     exit()
+if departure == today:
+    print('You are leaving today')
+if returnDate == today:
+    print('Please enter a valid return date')
+if returnDate == departure:
+    print('Please enter a valid departure/return date')
+
+#Print the search
+print("This is the search you have entered:")
+print("Departure airport: " + flyFrom)
+print("Destination airport: " + flyTo)
+print("Departure date: " + dateFrom)
+print("Return date: " + returnFrom)
+print("")
 
 
 
@@ -83,6 +180,12 @@ flights = data["data"]
 # Create a set to keep track of unique airports
 unique_airports = set()
 
+#if empty results
+if not flights:
+    print("There are no results for your search. Please try again.")
+    exit()
+
+print("Here are the results:")
 # Create a PrettyTable instance
 table = PrettyTable()
 table.field_names = ["City", "Departure Date", "Arrival Date", "Price"]
@@ -106,3 +209,11 @@ for flight in flights:
 # Print the table
 print(table)
 print("Thank you for using our search engine. We hope you will find the best deal for your next trip!")
+
+
+#cmd arguments
+
+
+
+
+
