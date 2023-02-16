@@ -63,6 +63,12 @@ if flyFrom == '' or flyFrom == None:
 if flyTo == '' or flyTo == None:
     flyTo = 'europe' #Change to your destination airport code
 
+#if both dates are valid dates
+if dateFrom != 'today' and dateFrom != 'tomorrow' and dateFrom != '' and dateFrom != None and returnFrom != 'today' and returnFrom != 'tomorrow' and returnFrom != '' and returnFrom != None:
+    departure = datetime.strptime(dateFrom, '%d/%m/%Y')
+    returnDate = datetime.strptime(returnFrom, '%d/%m/%Y')
+
+#if both dates are empty
 if (dateFrom == '' or dateFrom == None) and (returnFrom == '' or returnFrom == None): 
     if today.weekday() == 0:
         departure = today + timedelta(days=3)
@@ -89,61 +95,60 @@ if (dateFrom == '' or dateFrom == None) and (returnFrom == '' or returnFrom == N
     returnFrom = returnDate.strftime('%d/%m/%Y')
     print('You did not enter a date, so we chose the best dates for you')
 
-#Change to your departure date
+#if departure date is today
 if dateFrom == 'today':
     departure = today
     dateFrom = today.strftime('%d/%m/%Y')
 
-#Change to your departure date
+#if departure date is tomorrow
 if dateFrom == 'tomorrow': 
     departure = today + timedelta(days=1) #Return the next day
     dateFrom = departure.strftime('%d/%m/%Y')
 
-#if dateFrom is a valid date
-if dateFrom != 'today' and dateFrom != 'tomorrow' and dateFrom != '' and dateFrom != None:
+#if dateFrom is a valid date (Not today or tomorrow or empty)
+if dateFrom != 'today' and dateFrom != 'tomorrow' and dateFrom != '' and dateFrom != None and returnFrom == '' or returnFrom == None:
     departure = datetime.strptime(dateFrom, '%d/%m/%Y')
     returnDate = departure + timedelta(days=4) #Return 4 days later
     returnFrom = returnDate.strftime('%d/%m/%Y')
 
-#Change to your return date
+#If return date is empty or today or None
 if (returnFrom == '' or returnFrom == 'today' or returnFrom == None):
     returnDate = today + timedelta(days=4) #Return 4 days later
     returnFrom = returnDate.strftime('%d/%m/%Y')
 
-#Change to your return date
+#if return date is tomorrow
 if returnFrom == 'tomorrow':
     returnDate = today + timedelta(days=5) #Return 5 days later
     returnFrom = returnDate.strftime('%d/%m/%Y')
 
-#if returnFrom is a valid date
-if returnFrom != 'today' and returnFrom != 'tomorrow' and returnFrom != '' and returnFrom != None:
+#if returnFrom is a valid date (Not today or tomorrow or empty)
+if returnFrom != 'today' and returnFrom != 'tomorrow' and returnFrom != '' and returnFrom != None and dateFrom == '' or dateFrom == None:
     returnDate = datetime.strptime(returnFrom, '%d/%m/%Y')
     departure = returnDate - timedelta(days=4) #Leave 4 days before return
     dateFrom = departure.strftime('%d/%m/%Y')
 
-#if elseif else
-
-
-
-
-
-#Safety check for dates
+#if departure date is before today and not today and return date is before today and not today
 if departure < today and departure != today and returnDate < today and returnDate != today:
     print('Please enter a valid departure date')
     print('Today is ' + today.strftime('%d/%m/%Y'))
     print('You entered ' + departure.strftime('%d/%m/%Y') + ' as departure date')
     exit()
+#if return date is before departure date
 if returnDate < departure:
     print('Please enter a valid return date')
     print('Today is ' + today.strftime('%d/%m/%Y'))
     print('You entered ' + returnFrom + ' as return date')
     exit()
+#If departure date is today
 if departure == today:
     print('You are leaving today')
+#If return date is today
 if returnDate == today:
     print('Please enter a valid return date')
+#If departure date is the same as return date
 if returnDate == departure:
     print('Please enter a valid departure/return date')
+
 
 #Print the search
 print("This is the search you have entered:")
